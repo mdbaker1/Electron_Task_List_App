@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Add Task List Item</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <form action="">
+            <div class="container">
+                <label for="">Enter Task</label>
+                <input type="text" id="newTask" autofocus>
+            </div>
+            <button class="btn waves-effect waves-light+4" id="saveFile" type="submit">Add Task</button>
+        </form>
+    </div>
+
+    <script>
+        require('./renderer.js');
+        const electron = require('electron');
+        const { ipcRenderer } = electron;
+        const form = document.querySelector('form');
+
+        /* add event listener adding task */
+        form.addEventListener('submit', submitForm);
+
+        /* function to add task */
+        function submitForm(e) {
+            e.preventDefault();
+            var task = document.querySelector('#newTask').value;
+
+            /* send entry to main form */
+            ipcRenderer.send('newTask:add', task);
+        };
+    </script>
+</body>
+
+</html>
