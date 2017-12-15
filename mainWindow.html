@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Task List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body class="deep-purple accent-1">
+    <nav>
+        <div class="nav-wrapper  indigo darken-2">
+            <a href="" class="brand-logo center">Task List</a>
+        </div>
+    </nav>
+    <div class="container">
+        <ul id="taskList"></ul>
+    </div>
+    <div class="center-align">
+        <button class="btn btn-floating pulse" id="saveFile">
+            <i class="material-icons">save</i>
+        </button>
+    </div>
+
+    <script>
+        /* declare/initialize global variables */
+        const electron = require('electron');
+        const { ipcRenderer } = electron;
+        const ul = document.querySelector('ul');
+        const ipc = electron.ipcRenderer;
+        const { dialog } = require('electron').remote;
+        const fs = require('fs');
+
+        /* Add items to list */
+        ipcRenderer.on('newTask:add', function (e, task) {
+            ul.className = 'collection deep-purple accent-1';
+            const li = document.createElement('li');
+            li.className = 'collection-item cyan accent-1';
+            const taskText = document.createTextNode(task);
+            li.appendChild(taskText);
+            ul.appendChild(li);
+        });
+
+        /* Clear all items from list */
+        ipcRenderer.on('task:clear', function () {
+            ul.innerHTML = '';
+            ul.className = '';
+        });
+
+        /* Remove item from list */
+        ul.addEventListener('dblclick', removeTask);
+        function removeTask(e) {
+            e.target.remove();
+            if (ul.children.length == 0) {
+                ul.className = '';
+            }
+        };
+
+        /* read selected task list */
+        ipc.on('openFile', (evt, filename) => {
+            fs.readFile(filename, 'utf-8', (err, data) => {
+                if (err) {
+                    alert("Error opening file");
+                }
+
+                const displayTaskList = document.getElementById('taskList');
+                displayTaskList.innerHTML = data;
+                if (displayTaskList.value !== '') {
+                    ul.className = 'collection deep-purple accent-1';
+                    //li.className = 'collection-item';
+
+                }
+            });
+        });
+
+        /* Save taskfile */
+        document.getElementById('saveFile').addEventListener('click', function () {
+            dialog.showSaveDialog(function (filename) {
+                if (filename === undefined) {
+                    alert("The file has not been saved");
+                    return;
+                }
+
+                const content = document.getElementById('taskList').innerHTML;
+                fs.writeFile(filename, content, function (err) {
+                    if (err) {
+                        alert("The file has was not saved");
+                    }
+
+                    alert("The file has been saved successfully");
+                });
+            });
+        }, false);
+    </script>
+</body>
+
+</html>
